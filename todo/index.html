@@ -4,13 +4,22 @@
   <meta charset="UTF-8">
   <meta http-equiv="X-UA-Compatible" content="IE=edge,chrome=1">
   <title>ToDo in Backbone.js</title>
-     <!-- ========= -->
+  <!-- ========= -->
   <!-- Your CSS -->
   <!-- ========= -->
     <style type ="text/css">
     /*Hides bullet points from todo list*/
         #todoapp ul {
             list-style-type: none;
+        }
+        #todo-list input.edit {
+            display:none; /*Hides input box*/
+        }
+        #todo-list .editing label {
+            display: none; /*Hides label text when .editing*/
+        }
+        #todo-list .editiong input.edit {
+            display: inline; /*Shows input text box when .editing*/
         }
     </style>
 </head>
@@ -34,8 +43,9 @@
     <!-- Templates -->
   <script type="text/template" id="item-template">
     <div class="view">
-      <input class="toggle" type="checkbox">
+      <input class="toggle" type="checkbox" <%= completed ? 'checked' : '' %>>
       <label><%- title %></label>
+      <input class="edit" value="<%- title %>">
     </div>
   </script>
 
@@ -77,6 +87,31 @@ app.TodoView = Backbone.View.extend({
     this.$el.html(this.template(this.model.toJSON()));
     return this; // enable chained calls
   }
+    initialize: function(){
+    this.model.on('change', this.render, this);
+},
+    events: {
+        'dblclick label' : 'edit',
+        'keypress .edit' : 'updateOnEnter',
+        'blur .edit' : 'close'
+},
+     edit: {
+         this.$el.addClass('editing');
+      this.input.focus();
+                                    },
+     close: function() {
+         var value = this.input.val().trim();
+         if(value) {
+             this.model.save({title: value});
+
+         }
+         this.$el.removeClass('editing');
+     },
+         updateOnEnter: function(e){
+             if(e.which== 13){
+                 this.close();
+             }
+         }
 });
       // renders the full list of todo items calling TodoView for each one.
 app.AppView = Backbone.View.extend({
